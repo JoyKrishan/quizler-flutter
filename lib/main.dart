@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:quizzler/Question.dart';
+import 'package:quizzler/question.dart';
+import 'package:quizzler/quizbrain.dart';
+
+QuizBrain brain = new QuizBrain();
 
 void main() => runApp(Quizzler());
 
@@ -39,17 +42,18 @@ class _QuizPageState extends State<QuizPage> {
     true
   ];*/
 
-  List <Question> questionObj = [
-    Question('You can lead a cow down stairs but not up stairs.',false),
-    Question('Approximately one quarter of human bones are in the feet.', true),
-    Question('A slug\'s blood is green.', true)
+  // List <Question> questionObj = [
+  //   Question('You can lead a cow down stairs but not up stairs.',false),
+  //   Question('Approximately one quarter of human bones are in the feet.', true),
+  //   Question('A slug\'s blood is green.', true)
+  //
+  // ];
 
-  ];
-
+  int totalScore = 0;
   int questionNumber = 0;
 
   void answerChecker(bool chosenAns){
-    bool correctAns = questionObj[questionNumber].answer;
+    bool correctAns = brain.getAnswer(questionNumber);
     if (correctAns == chosenAns){
       print('User got it right');
       scoreKeeper.add(
@@ -58,6 +62,7 @@ class _QuizPageState extends State<QuizPage> {
             color: Colors.green,
           )
       );
+      totalScore += 1;
     }else{
       print('User got it wrong');
       scoreKeeper.add(Icon(
@@ -65,7 +70,7 @@ class _QuizPageState extends State<QuizPage> {
         color: Colors.red,
       ),);
     }
-    questionNumber = (questionNumber + 1) % questionObj.length;
+    questionNumber = (questionNumber + 1) % brain.getTotalQuestions();
   }
 
   @override
@@ -74,13 +79,23 @@ class _QuizPageState extends State<QuizPage> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        Container(
+          margin: EdgeInsets.only(top: 5.0, left: 5.0),
+          child: Text(
+            "Score: $totalScore",
+            style: TextStyle(
+              fontSize: 20.0,
+              color: Colors.white,
+            ),
+          ),
+        ),
         Expanded(
           flex: 5,
           child: Padding(
             padding: EdgeInsets.all(10.0),
             child: Center(
               child: Text(
-                questionObj[questionNumber].question,
+                brain.getQuestionText(questionNumber),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 25.0,
