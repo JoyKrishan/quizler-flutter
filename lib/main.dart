@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:quizzler/question.dart';
 import 'package:quizzler/quizbrain.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 QuizBrain brain = new QuizBrain();
 
@@ -29,7 +30,6 @@ class QuizPage extends StatefulWidget {
 }
 
 class _QuizPageState extends State<QuizPage> {
-  List <Icon> scoreKeeper = [];
   /*
   List <String> questionList = [
     'You can lead a cow down stairs but not up stairs.',
@@ -48,12 +48,11 @@ class _QuizPageState extends State<QuizPage> {
   //   Question('A slug\'s blood is green.', true)
   //
   // ];
-
+  List <Icon> scoreKeeper = [];
   int totalScore = 0;
-  int questionNumber = 0;
 
   void answerChecker(bool chosenAns){
-    bool correctAns = brain.getAnswer(questionNumber);
+    bool correctAns = brain.getAnswer();
     if (correctAns == chosenAns){
       print('User got it right');
       scoreKeeper.add(
@@ -70,7 +69,32 @@ class _QuizPageState extends State<QuizPage> {
         color: Colors.red,
       ),);
     }
-    questionNumber = (questionNumber + 1) % brain.getTotalQuestions();
+    brain.nextQuestion();
+  }
+
+  void createAlert(BuildContext context){
+    Alert(
+      context: context,
+      type: AlertType.error,
+      title: "Quiz Ended",
+      desc: "Your Score: $totalScore",
+      buttons: [
+        DialogButton(
+          child: Text(
+            "Try Again?",
+            style: TextStyle(color: Colors.white, fontSize: 20),
+          ),
+          onPressed: () => Navigator.pop(context),
+          width: 120,
+        )
+      ],
+    ).show();
+  }
+
+  void resetGame(){
+    totalScore = 0;
+    scoreKeeper.clear();
+    brain.reset();
   }
 
   @override
@@ -95,7 +119,7 @@ class _QuizPageState extends State<QuizPage> {
             padding: EdgeInsets.all(10.0),
             child: Center(
               child: Text(
-                brain.getQuestionText(questionNumber),
+                brain.getQuestionText(),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 25.0,
@@ -122,8 +146,12 @@ class _QuizPageState extends State<QuizPage> {
                 onPressed: () {
                   //The user picked true.
                   setState(() {
-                    answerChecker(true);
-                  });
+                    if (brain.availableQuestion() == false){
+                      createAlert(context);
+                      resetGame();
+                    }else {
+                      answerChecker(true);
+                    }});
                 },
               ),
             ),
@@ -145,7 +173,12 @@ class _QuizPageState extends State<QuizPage> {
                 onPressed: () {
                   //The user picked false.
                   setState(() {
-                    answerChecker(false);
+                    if (brain.availableQuestion() == false){
+                      createAlert(context);
+                      resetGame();
+                    }else {
+                      answerChecker(false);
+                    }
                   });
                 },
               ),
